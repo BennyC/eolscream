@@ -2,7 +2,7 @@ package pkg
 
 // Notifier interface
 type Notifier interface {
-	Notify()
+	Notify(p Product, i ReleaseInfo)
 }
 
 func NewNilNotifier() *NilNotifier {
@@ -13,4 +13,4 @@ func NewNilNotifier() *NilNotifier {
 type NilNotifier struct{}
 
 // Notify is a Nil operation
-func (n NilNotifier) Notify() {}
+func (n NilNotifier) Notify(_ Product, _ ReleaseInfo) {}

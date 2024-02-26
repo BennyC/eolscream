@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type ProductFile struct {
@@ -56,4 +57,21 @@ func CatalogueFromJson(bytes []byte) (*Catalogue, error) {
 	}
 
 	return &products.Catalogue, nil
+}
+
+type ReleaseInfo struct {
+	ReleaseDate   string `json:"releaseDate"`
+	EndOfLifeDate string `json:"eol"`
+}
+
+func (r *ReleaseInfo) IsEndOfLifeDateNear() (bool, error) {
+	eol, err := time.Parse("2006-01-02", r.EndOfLifeDate)
+	if err != nil {
+		return false, err
+	}
+
+	today := time.Now()
+	sixMonthsFromNow := today.AddDate(0, 6, 0)
+
+	return eol.Before(sixMonthsFromNow), nil
 }

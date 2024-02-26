@@ -1,0 +1,8 @@
+{
+  "catalogue": [
+    {
+      "name": "go",
+      "version": "1.20"
+    }
+  ]
+}
