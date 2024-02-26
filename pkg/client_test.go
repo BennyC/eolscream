@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -84,6 +85,53 @@ func TestEndOfLifeDateClient_FetchProductInfo_Errors(t *testing.T) {
 			assert.Nil(t, got)
 			assert.NotNil(t, err)
 			assert.Equal(t, tt.wantErr.Error(), err.Error())
+		})
+	}
+}
+
+func TestReleaseInfo_IsEndOfLifeDateNear(t *testing.T) {
+	tests := []struct {
+		name          string
+		endOfLifeDate string
+		want          bool
+		wantErr       bool
+	}{
+		{
+			name:          "Given date is within six months from today",
+			endOfLifeDate: time.Now().AddDate(0, 5, 0).Format("2006-01-02"),
+			want:          true,
+			wantErr:       false,
+		},
+		{
+			name:          "Given date is more than six months from today",
+			endOfLifeDate: time.Now().AddDate(0, 7, 0).Format("2006-01-02"),
+			want:          false,
+			wantErr:       false,
+		},
+		{
+			name:          "Given date is in the past",
+			endOfLifeDate: time.Now().AddDate(-1, 0, 0).Format("2006-01-02"),
+			want:          true,
+			wantErr:       false,
+		},
+		{
+			name:          "Given date is in a wrong format",
+			endOfLifeDate: "202-02-900",
+			want:          false,
+			wantErr:       true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &ReleaseInfo{EndOfLifeDate: tt.endOfLifeDate}
+			got, err := r.IsEndOfLifeDateNear()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want, got)
+			}
 		})
 	}
 }
