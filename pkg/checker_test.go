@@ -6,20 +6,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MockClient struct {
+type mockClient struct {
 	expectedReleaseInfo *ReleaseInfo
 	expectedErr         error
 }
 
-func (mc *MockClient) FetchReleaseInfo(product Product) (*ReleaseInfo, error) {
+func (mc *mockClient) FetchReleaseInfo(product Product) (*ReleaseInfo, error) {
 	return mc.expectedReleaseInfo, mc.expectedErr
 }
 
-type MockNotifier struct {
+type mockNotifier struct {
 	notifyCount int
 }
 
-func (m *MockNotifier) Notify(p Product, r ReleaseInfo) {
+func (m *mockNotifier) Notify(p Product, r ReleaseInfo) {
 	m.notifyCount++
 }
 
@@ -47,10 +47,10 @@ func TestNotifyNearEndOfLife(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			notifier := &MockNotifier{notifyCount: 0}
+			notifier := &mockNotifier{notifyCount: 0}
 			opts := CatalogueCheckerOptions{
 				Path: tc.path,
-				Client: &MockClient{
+				Client: &mockClient{
 					expectedReleaseInfo: tc.expectedReleaseInfo,
 				},
 				Notifier: notifier,
