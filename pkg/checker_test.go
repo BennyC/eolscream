@@ -36,6 +36,13 @@ func TestNotifyNearEndOfLife(t *testing.T) {
 			expectedReleaseInfo: &ReleaseInfo{ReleaseDate: "2019-05-01", EndOfLifeDate: "2024-02-26"},
 			expectedNotifyCount: 1,
 		},
+
+		{
+			name:                "happy in future",
+			path:                "testdata/good_catalogue.json",
+			expectedReleaseInfo: &ReleaseInfo{ReleaseDate: "2019-05-01", EndOfLifeDate: "2100-02-26"},
+			expectedNotifyCount: 0,
+		},
 	}
 
 	for _, tc := range testCases {
