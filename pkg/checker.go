@@ -1,5 +1,7 @@
 package pkg
 
+import "log/slog"
+
 type CatalogueChecker struct {
 	opts CatalogueCheckerOptions
 }
@@ -8,6 +10,7 @@ type CatalogueCheckerOptions struct {
 	Path     string
 	Client   EndOfLifeClient
 	Notifier Notifier
+	Logger   *slog.Logger
 }
 
 func NewCatalogueChecker(opts CatalogueCheckerOptions) *CatalogueChecker {
@@ -32,6 +35,14 @@ func (c *CatalogueChecker) NotifyNearEndOfLife() error {
 		}
 
 		if nearEol {
+			c.opts.Logger.Info(
+				"Product is at EOL",
+				slog.String("product", product.Name),
+				slog.String("version", product.Version),
+				slog.String("eol", releaseInfo.EndOfLifeDate),
+				slog.String("release", releaseInfo.ReleaseDate),
+			)
+
 			c.opts.Notifier.Notify(product, *releaseInfo)
 		}
 	}

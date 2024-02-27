@@ -1,4 +1,4 @@
-module eol-notify
+module eolscream
 
 go 1.22.0
 

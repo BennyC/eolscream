@@ -23,7 +23,7 @@ func NewEndOfLifeDateClient(getter Getter) *EndOfLifeHttpClient {
 }
 
 func (c *EndOfLifeHttpClient) FetchReleaseInfo(product Product) (*ReleaseInfo, error) {
-	url := fmt.Sprintf("https://endoflife.date/api/%s/%s", product.Name, product.Version)
+	url := fmt.Sprintf("https://endoflife.date/api/%s/%s.json", product.Name, product.Version)
 	resp, err := c.Getter.Get(url)
 	if err != nil {
 		return nil, err
