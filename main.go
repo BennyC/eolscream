@@ -9,15 +9,17 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	checker := pkg.NewCatalogueChecker(pkg.CatalogueCheckerOptions{
 		Path:     "catalogue.json",
 		Client:   pkg.NewEndOfLifeDateClient(http.DefaultClient),
 		Notifier: pkg.NewNilNotifier(),
-		Logger:   slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		Logger:   logger,
 	})
 
 	err := checker.NotifyNearEndOfLife()
 	if err != nil {
+		logger.Error(err.Error())
 		return
 	}
 }

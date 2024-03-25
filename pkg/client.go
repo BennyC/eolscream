@@ -3,6 +3,7 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
@@ -35,7 +36,9 @@ func (c *EndOfLifeHttpClient) FetchReleaseInfo(product Product) (*ReleaseInfo, e
 
 func extractReleaseInfo(resp *http.Response) (*ReleaseInfo, error) {
 	var releaseInfo ReleaseInfo
-	if err := json.NewDecoder(resp.Body).Decode(&releaseInfo); err != nil {
+	body, _ := io.ReadAll(resp.Body)
+	fmt.Println(string(body))
+	if err := json.Unmarshal(body, &releaseInfo); err != nil {
 		return nil, err
 	}
 	return &releaseInfo, nil

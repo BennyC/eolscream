@@ -1,6 +1,9 @@
 package pkg
 
-import "log/slog"
+import (
+	"fmt"
+	"log/slog"
+)
 
 type CatalogueChecker struct {
 	opts CatalogueCheckerOptions
@@ -18,25 +21,29 @@ func NewCatalogueChecker(opts CatalogueCheckerOptions) *CatalogueChecker {
 }
 
 func (c *CatalogueChecker) NotifyNearEndOfLife() error {
+	logger := c.opts.Logger
+
+	logger.Debug("attempting to load catalogue from path", slog.String("path", c.opts.Path))
 	catalogue, err := NewCatalogueFromFile(c.opts.Path)
 	if err != nil {
-		return err
+		return fmt.Errorf("CatalogueChecker@NotifyNearEndOfLife: unable to load catalogue: %w", err)
 	}
 
 	for _, product := range *catalogue {
+		logger.Debug("attempting to fetch release info for product", slog.String("product", product.Name), slog.String("version", product.Version))
 		releaseInfo, err := c.opts.Client.FetchReleaseInfo(product)
 		if err != nil {
-			return err
+			return fmt.Errorf("CatalogueChecker@NotifyNearEndOfLife: unable to fetch release info for product: %w", err)
 		}
 
-		nearEol, err := releaseInfo.IsEndOfLifeDateNear()
+		nearEol, err := c.inspectReleaseInfo(logger, product, releaseInfo, err)
 		if err != nil {
 			return err
 		}
 
 		if nearEol {
-			c.opts.Logger.Info(
-				"Product is at EOL",
+			c.opts.Logger.Debug(
+				"product is near eol, sending notification",
 				slog.String("product", product.Name),
 				slog.String("version", product.Version),
 				slog.String("eol", releaseInfo.EndOfLifeDate),
@@ -48,4 +55,20 @@ func (c *CatalogueChecker) NotifyNearEndOfLife() error {
 	}
 
 	return nil
+}
+
+func (c *CatalogueChecker) inspectReleaseInfo(logger *slog.Logger, product Product, releaseInfo *ReleaseInfo, err error) (bool, error) {
+	logger.Debug(
+		"checking eol within release info",
+		slog.String("product", product.Name),
+		slog.String("eol", releaseInfo.EndOfLifeDate),
+		slog.String("release", releaseInfo.ReleaseDate),
+	)
+
+	nearEol, err := releaseInfo.IsEndOfLifeDateNear()
+	if err != nil {
+		return false, fmt.Errorf("CatalogueChecker@NotifyNearEndOfLife: unable to check is near eol: %w", err)
+	}
+
+	return nearEol, nil
 }
