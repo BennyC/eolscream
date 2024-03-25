@@ -37,7 +37,6 @@ func (c *EndOfLifeHttpClient) FetchReleaseInfo(product Product) (*ReleaseInfo, e
 func extractReleaseInfo(resp *http.Response) (*ReleaseInfo, error) {
 	var releaseInfo ReleaseInfo
 	body, _ := io.ReadAll(resp.Body)
-	fmt.Println(string(body))
 	if err := json.Unmarshal(body, &releaseInfo); err != nil {
 		return nil, err
 	}
