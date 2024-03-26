@@ -13,6 +13,7 @@ type ProductFile struct {
 type Product struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
+	Label   string `json:"label"`
 }
 
 type Catalogue []Product

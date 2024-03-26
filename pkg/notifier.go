@@ -65,17 +65,12 @@ func NewSlackNotifier(url string) *SlackNotifier {
 //	notifier.Notify(product, releaseInfo)
 //	This sends a notification to Slack with the specified product and release information.
 func (s *SlackNotifier) Notify(p Product, i ReleaseInfo) {
-	message := fmt.Sprintf("Product Name: %s, Version: %s, Release Date: %s, End of Life Date: %s",
-		p.Name, p.Version, i.ReleaseDate, i.EndOfLifeDate)
-
-	payload := map[string]string{"text": message}
-	payloadBytes, err := json.Marshal(payload)
+	message, err := GenerateSlackMessage(p, i)
 	if err != nil {
-		log.Printf("error marshalling payload: %v", err)
 		return
 	}
 
-	req, err := http.NewRequest("POST", s.webhookURL, bytes.NewBuffer(payloadBytes))
+	req, err := http.NewRequest("POST", s.webhookURL, bytes.NewBuffer(message))
 	if err != nil {
 		log.Printf("error creating request: %v", err)
 		return
@@ -89,4 +84,48 @@ func (s *SlackNotifier) Notify(p Product, i ReleaseInfo) {
 		return
 	}
 	defer resp.Body.Close()
+}
+
+// SlackMessageBlock represents a single block in the Slack message.
+type SlackMessageBlock struct {
+	Type   string       `json:"type"`
+	Text   *TextObject  `json:"text,omitempty"`
+	Fields []TextObject `json:"fields,omitempty"`
+}
+
+// TextObject represents text elements in Slack message blocks.
+type TextObject struct {
+	Type  string `json:"type"`
+	Text  string `json:"text"`
+	Emoji *bool  `json:"emoji,omitempty"`
+}
+
+// SlackMessage represents the entire Slack message in Block Kit format.
+type SlackMessage struct {
+	Blocks []SlackMessageBlock `json:"blocks"`
+}
+
+// GenerateSlackMessage generates a structured Slack message for product lifecycle alerts.
+func GenerateSlackMessage(product Product, release ReleaseInfo) ([]byte, error) {
+	message := SlackMessage{
+		Blocks: []SlackMessageBlock{
+			{
+				Type: "section",
+				Fields: []TextObject{
+					{Type: "mrkdwn", Text: fmt.Sprintf("Product Name:\n*%s*", product.Name)},
+					{Type: "mrkdwn", Text: fmt.Sprintf("Version:\n*%s*", product.Version)},
+					{Type: "mrkdwn", Text: fmt.Sprintf("Label:\n*%s*", product.Label)},
+					{Type: "mrkdwn", Text: fmt.Sprintf("Release Date:\n*%s*", release.ReleaseDate)},
+					{Type: "mrkdwn", Text: fmt.Sprintf("End of Life Date:\n*%s*", release.EndOfLifeDate)},
+				},
+			},
+		},
+	}
+
+	jsonMessage, err := json.Marshal(message)
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonMessage, nil
 }
