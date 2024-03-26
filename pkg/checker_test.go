@@ -54,6 +54,7 @@ func TestNotifyNearEndOfLife(t *testing.T) {
 					expectedReleaseInfo: tc.expectedReleaseInfo,
 				},
 				Notifier: notifier,
+				Logger:   NilLogger(),
 			}
 
 			cc := NewCatalogueChecker(opts)

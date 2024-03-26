@@ -33,13 +33,27 @@ func (c *CatalogueChecker) NotifyNearEndOfLife() error {
 		logger.Debug("attempting to fetch release info for product", slog.String("product", product.Name), slog.String("version", product.Version))
 		releaseInfo, err := c.opts.Client.FetchReleaseInfo(product)
 		if err != nil {
-			logger.Error("CatalogueChecker@NotifyNearEndOfLife: unable to fetch release info for product: %w", "error", err)
-			return nil
+			logger.Error(
+				"CatalogueChecker@NotifyNearEndOfLife: unable to fetch release info for product: %w",
+				slog.String("error", err.Error()),
+				slog.String("product", product.Name),
+				slog.String("version", product.Version),
+			)
+
+			continue
 		}
 
 		nearEol, err := c.inspectReleaseInfo(logger, product, releaseInfo, err)
 		if err != nil {
-			return err
+			logger.Error(
+				"CatalogueChecker@NotifyNearEndOfLife: unable to inspect release info: %w",
+				"error",
+				slog.String("error", err.Error()),
+				slog.String("product", product.Name),
+				slog.String("version", product.Version),
+			)
+
+			continue
 		}
 
 		if nearEol {
