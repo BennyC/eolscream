@@ -12,6 +12,24 @@ EOL Scream is a tool designed to notify users about products that are nearing th
 
 EOL Scream operates by reading product information from a specified JSON file containing a list of products and their EOL dates. It then checks if any of the products are within six months of their EOL date. If such products are found, it uses Slack's webhook functionality to send notifications.
 
+## Application Code Flow
+
+The following diagram illustrates the flow of the application code in Go, highlighting how the main components interact within the system:
+
+```mermaid
+graph TD;
+    A[main.go] -->|reads config & initiates| B[Catalogue Processing];
+    B --> C{EOL Check};
+    C -->|products nearing EOL| D[Notifications];
+    D -->|uses Slack Webhook| E[Slack Notifications];
+    B -->|loads| F[JSON Catalogue File];
+    A -->|logs setup| G[Logger];
+    C -->|determines EOL status| H[Product & ReleaseInfo];
+
+    classDef code fill:#f9f,stroke:#333,stroke-width:2px;
+    class A,B,C,D,E,F,G,H code;
+```
+
 ## Configuration
 
 The tool can be configured through environment variables:
